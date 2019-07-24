@@ -31,7 +31,7 @@ def contents() -> List[str]:
 
 
 title = lambda: f'Cool [{datetime.datetime.now()}]'
-block_resources = pyroglyph.Block(title, contents)
+block_resources = pyroglyph.BasicBlock(title, contents)
 
 window = pyroglyph.Window('Darjeeling', [block_resources], [])
 window.run()
