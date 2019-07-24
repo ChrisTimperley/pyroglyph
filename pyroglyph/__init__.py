@@ -43,13 +43,13 @@ def contents(c: Contents) -> DynamicContents:
 
 class Block(abc.ABC):
     @property
-    @abstractmethod
+    @abc.abstractmethod
     def title(self) -> str:
         """The current title of the block."""
         ...
 
     @property
-    @abstractmethod
+    @abc.abstractmethod
     def contents(self) -> Sequence[str]:
         """The current contents of the block as a sequence of lines."""
         ...
