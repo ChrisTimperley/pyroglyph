@@ -1,0 +1,20 @@
+language: python
+python:
+- '3.6'
+install:
+- pip install pycodestyle
+- pip install mypy mypy-extensions
+- pip install --upgrade .
+script:
+- pycodestyle --show-source pyroglyph
+- mypy fluffycow --ignore-missing-imports
+notifications:
+  email: false
+deploy:
+  - provider: pypi
+    user: ChrisTimperley
+    password:
+      secure: "sPVtyxtjwIZ/dBMt7ln0SYBx5c2uY3RKhs34UUUm0vXuP0mnPoCZmrmDYZIob3OBMP/2bPDTCDdLywkAc1fMPPliK2DXnjY4ZGeCDYHstlF3ONPY9ZDQAgFGRj1vpMasDsblpg0ejHCIqEEA4HC+D7Z0horDJvwUjjp3AgX4AN2+dl1YQNhBZIR+ug7kaX5w/Mt7jqxx4MVux78HXsKuNEIS8X+30mz+Kxyfs3sMoVzHOe1ecEClxNrshxrETjHhLlMuNQ1V3ICkAFx6/rcPXnt1Y35I+0UMMCzB9o0viKYnigYQJ0sOslK+Cq7P+ZYERMDdAyo5ykXmGKeenAV+qSudYq1O3lEjAZOImsKmg2A1eLfF0h/Qnfw0hKi2dGIg1Nc2AD0HukVfLnjreq7B6L8bDc89U0T5HMty9aOpPG+aR/Awg6oJmeUiJvvFTkFOK5xRLg9bvGWkwU2hJScmajQTMmWin04hDyVkxMEIfjI5Re++MY9TYNOg60AoO0/bHVTQZqFH3rvb7V74wwD0gljI2/EACWqp7j6qe7wl6+goUEbch8h7eHwx+Pr+Vw6ZKsgl0KsLM0lk3RZ+aE7EXtW4IigiXXF6EuggDPS/0Uz0JW0uQx2iaq6MY+FAVoJjMiE5IZnyNDoXy7ZQP5b8EJP0SzepmKf+BMhLTgm3r1U="
+    on:
+      tags: true
+      python: '3.6'
