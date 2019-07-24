@@ -54,12 +54,6 @@ class Block(abc.ABC):
         """The current contents of the block as a sequence of lines."""
         ...
 
-
-@attr.s
-class BasicBlock(Block):
-    title: DynamicTitle = attr.ib(converter=title)
-    contents: DynamicContents = attr.ib(converter=contents)
-
     def render(self,
                t: blessed.Terminal,
                *,
@@ -92,6 +86,13 @@ class BasicBlock(Block):
             lines.append(rule)
 
         return lines
+
+
+@attr.s
+class BasicBlock(Block):
+    title: DynamicTitle = attr.ib(converter=title)
+    contents: DynamicContents = attr.ib(converter=contents)
+
 
 
 @attr.s
