@@ -22,7 +22,7 @@ class Block:
                border_right: bool = True
                ) -> List[str]:
         """Renders the contents of the block to a list of lines."""
-        lines = []  # type: List[str]
+        lines: List[str] = []
 
         rule = width * '.'
         left = ': ' if border_left else ' '
