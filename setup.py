@@ -4,7 +4,7 @@ import os
 from setuptools import setup
 
 PACKAGE_NAME = 'pyroglyph'
-VERSION = 0.0.1
+VERSION = '0.0.1'
 
 setup(
     name=PACKAGE_NAME,
