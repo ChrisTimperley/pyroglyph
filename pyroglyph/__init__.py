@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__all__ = ('__version__', 'Block')
+__all__ = ('__version__', 'Block', 'Window')
 
 from typing import Optional, Sequence, List
 
@@ -42,3 +42,69 @@ class Block:
             lines.append(rule)
 
         return lines
+
+
+@attr.s
+class Window:
+    """Provides an interactive terminal-based user interface."""
+    title: str = attr.ib()
+    blocks_left: Sequence[Block] = attr.ib()
+    blocks_right: Sequence[Block] = attr.ib()
+    terminal: blessed.Terminal = attr.ib(factory=blessed.Terminal)
+    width: int = attr.ib(default=120)
+
+    def _render_header(self) -> List[str]:
+        t = self.terminal
+        header = t.bold(t.center(self.title, width=self.width, fillchar='='))
+        return [header]
+
+    def _render(self) -> List[str]:
+        t = self.terminal
+        lines = self._render_header()
+
+        # determine block width
+        width_left = self.width // 2
+        width_right = width_left
+
+        # draw left blocks
+        lines_left: List[str] = []
+        for b in self.blocks_left[:1]:
+            lines_left += b.render(t, width=width_left)
+        for b in self.blocks_left[1:]:
+            lines_left += b.render(t, width=width_left, border_top=False)
+
+        # draw right blocks
+        lines_right: List[str] = []
+        for b in self.blocks_right[:1]:
+            lines_right += b.render(t, width=width_right, border_left=False)
+        for b in self.blocks_right[1:]:
+            lines_right += b.render(t, width=width_right, border_top=False, border_left=False)  # noqa
+
+        # ensure each column has the same number of lines by padding
+        height_left = len(lines_left)
+        height_right = len(lines_right)
+        height = max(height_left, height_right)
+        height_diff = abs(height_left - height_right)
+        if height_left > height_right:
+            padding = ' ' * width_right
+            lines_right += [padding for i in range(height_diff)]
+        elif height_right > height_left:
+            padding = ' ' * (width_left - 1) + ':'
+            lines_left += [padding for i in range(height_diff)]
+
+        # compose the two columns into a single list of lines
+        lines += [lines_left[i] + lines_right[i] for i in range(height)]
+
+        return lines
+
+    def _refresh(self) -> None:
+        print(self.terminal.clear(), end='')
+        print('\n'.join(self._render()), end='')
+
+    def run(self) -> None:
+        # TODO implement refresh rate
+        t = self.terminal
+        with t.fullscreen(), t.hidden_cursor():
+            while True:
+                self._refresh()
+                time.sleep(1)
