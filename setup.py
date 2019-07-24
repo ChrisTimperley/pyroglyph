@@ -9,7 +9,7 @@ VERSION = '0.0.1'
 setup(
     name=PACKAGE_NAME,
     version=VERSION,
-    python_requires='>=3.5',
+    python_requires='>=3.6',
     description='A simple library for building real-time text-based UIs',
     long_description=open('README.rst').read(),
     author='Chris Timperley',
