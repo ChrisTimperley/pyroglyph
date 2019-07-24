@@ -3,6 +3,16 @@
 pyroglyph
 =========
 
+.. image:: https://travis-ci.org/ChrisTimperley/pyroglyph.svg?branch=master
+    :target: https://travis-ci.org/ChrisTimperley/pyroglyph
+
+.. image:: https://badge.fury.io/py/pyroglyph.svg
+    :target: https://badge.fury.io/py/pyroglyph
+
+.. image:: https://img.shields.io/pypi/pyversions/pyroglyph.svg
+    :target: https://pypi.org/project/pyroglyph
+
+
 An elegant and intuitive library for building text-based UIs in Python.
 
 
