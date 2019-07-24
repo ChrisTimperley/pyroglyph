@@ -11,34 +11,8 @@ import blessed
 
 from . import exceptions
 
-ConcreteTitle = str
-DynamicTitle = Callable[[], ConcreteTitle]
-Title = Union[ConcreteTitle, DynamicTitle]
-
-ConcreteContents = Sequence[str]
-DynamicContents = Callable[[], ConcreteContents]
-Contents = Union[ConcreteContents, DynamicContents]
-
-
-def title(t: Title) -> DynamicTitle:
-    """Ensures that a given title is implemented as a dynamic title."""
-    if callable(t):
-        return t
-    elif isinstance(t, str):
-        s: str = t
-        return lambda: s
-    else:
-        raise ValueError("expected str or callable.")
-
-
-def contents(c: Contents) -> DynamicContents:
-    if callable(c):
-        return c
-    elif type(c) in (list, tuple):
-        k: Tuple[str, ...] = tuple(c)
-        return lambda: k
-    else:
-        raise ValueError("expected sequence of strings or a callable.")
+Title = Union[str, Callable[[], str]]
+Contents = Union[Sequence[str], Callable[[], Sequence[str]]]
 
 
 class Block(abc.ABC):
@@ -75,25 +49,34 @@ class Block(abc.ABC):
             lines.append(rule)
 
         if self.title:
-            title = self.title()
-            header = t.bold(title.ljust(iw))
+            header = t.bold(self.title.ljust(iw))
             header = f"{left}{header}{right}"
             lines.append(header)
 
-        contents = self.contents()
-        lines += [f'{left}{l: <{iw}}{right}' for l in contents]
+        lines += [f'{left}{l: <{iw}}{right}' for l in self.contents]
         if border_bottom:
             lines.append(rule)
 
         return lines
 
 
-@attr.s
 class BasicBlock(Block):
-    title: DynamicTitle = attr.ib(converter=title)
-    contents: DynamicContents = attr.ib(converter=contents)
+    """Uses a provided title and contents to form a block."""
+    def __init__(self, title: Title, contents: Contents) -> None:
+        self.__title: Title = title
+        self.__contents: Contents = contents
 
+    @property
+    def title(self) -> str:
+        if callable(self.__title):
+            return self.__title()
+        return self.__title
 
+    @property
+    def contents(self) -> Sequence[str]:
+        if callable(self.__contents):
+            return self.__contents()
+        return self.__contents
 
 @attr.s
 class Window:
