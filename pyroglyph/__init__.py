@@ -2,6 +2,7 @@
 __all__ = ('__version__', 'Block', 'Window')
 
 from typing import Optional, Sequence, List
+import time
 
 import attr
 import blessed
