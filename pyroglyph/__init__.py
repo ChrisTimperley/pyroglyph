@@ -1,17 +1,58 @@
 # -*- coding: utf-8 -*-
 __all__ = ('__version__', 'Block', 'Window')
 
-from typing import Optional, Sequence, List
+from typing import Optional, Sequence, List, Union, Callable
 from timeit import default_timer as timer
+import abc
 import time
 
 import attr
 import blessed
 
+from . import exceptions
+
+
+class Title(abc.ABC):
+    """Represents a title."""
+    def __str__(self) -> str:
+        return self.read()
+
+    @abc.abstractmethod
+    def read(self) -> str:
+        ...
+
+
+class ConcreteTitle(Title):
+    """Represents a concrete (i.e., static) title."""
+    def __init__(self, value: str) -> None:
+        self.__value = value
+
+    def read(self) -> str:
+        return self.__value
+
+
+class DynamicTitle(Title):
+    """Represents a dynamic title."""
+    def __init__(self, call: Callable[[], str]) -> None:
+        self.__call = call
+
+    def read(self) -> str:
+        return self.__call()
+
+
+def title(t: Union[str, Callable[[], str]]) -> Title:
+    """Builds a concrete or dynamic title."""
+    if isinstance(t, str):
+        return ConcreteTitle(t)
+    elif callable(t) and isinstance(t(), str):
+        return DynamicTitle(t)
+    else:
+        raise ValueError("expected str or callable.")
+
 
 @attr.s
 class Block:
-    title: Optional[str] = attr.ib()
+    title: Title = attr.ib(converter=title)
     contents: Sequence[str] = attr.ib()
 
     def render(self,
@@ -35,7 +76,8 @@ class Block:
             lines.append(rule)
 
         if self.title:
-            header = t.bold(self.title.ljust(iw))
+            title = self.title.read()
+            header = t.bold(title.ljust(iw))
             header = f"{left}{header}{right}"
             lines.append(header)
 
