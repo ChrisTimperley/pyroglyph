@@ -15,6 +15,10 @@ ConcreteTitle = str
 DynamicTitle = Callable[[], ConcreteTitle]
 Title = Union[ConcreteTitle, DynamicTitle]
 
+ConcreteContents = Sequence[str]
+DynamicContents = Callable[[], ConcreteContents]
+Contents = Union[ConcreteContents, DynamicContents]
+
 
 def title(t: Title) -> DynamicTitle:
     """Ensures that a given title is implemented as a dynamic title."""
@@ -26,10 +30,20 @@ def title(t: Title) -> DynamicTitle:
         raise ValueError("expected str or callable.")
 
 
+def contents(c: Contents) -> DynamicContents:
+    if type(c) in (list, tuple):
+        c = tuple(c)
+        return lambda: c
+    elif callable(c) and type(c()) in (list, tuple):
+        return c
+    else:
+        raise ValueError("expected sequence of strings or a callable.")
+
+
 @attr.s
 class Block:
-    title: Title = attr.ib(converter=title)
-    contents: Sequence[str] = attr.ib()
+    title: DynamicTitle = attr.ib(converter=title)
+    contents: DynamicContents = attr.ib(converter=contents)
 
     def render(self,
                t: blessed.Terminal,
@@ -57,7 +71,8 @@ class Block:
             header = f"{left}{header}{right}"
             lines.append(header)
 
-        lines += [f'{left}{l: <{iw}}{right}' for l in self.contents]
+        contents = self.contents()
+        lines += [f'{left}{l: <{iw}}{right}' for l in contents]
         if border_bottom:
             lines.append(rule)
 
