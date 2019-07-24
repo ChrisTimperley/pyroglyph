@@ -1,18 +1,50 @@
 # -*- coding: utf-8 -*-
 __all__ = ('__version__', 'Block', 'Window')
 
-from typing import Optional, Sequence, List
+from typing import Optional, Sequence, List, Union, Callable, Tuple
 from timeit import default_timer as timer
+import abc
 import time
 
 import attr
 import blessed
 
+from . import exceptions
+
+ConcreteTitle = str
+DynamicTitle = Callable[[], ConcreteTitle]
+Title = Union[ConcreteTitle, DynamicTitle]
+
+ConcreteContents = Sequence[str]
+DynamicContents = Callable[[], ConcreteContents]
+Contents = Union[ConcreteContents, DynamicContents]
+
+
+def title(t: Title) -> DynamicTitle:
+    """Ensures that a given title is implemented as a dynamic title."""
+    if callable(t):
+        return t
+    elif isinstance(t, str):
+        s: str = t
+        return lambda: s
+    else:
+        raise ValueError("expected str or callable.")
+
+
+def contents(c: Contents) -> DynamicContents:
+    if callable(c):
+        return c
+    elif type(c) in (list, tuple):
+        k: Tuple[str, ...] = tuple(c)
+        return lambda: k
+    else:
+        raise ValueError("expected sequence of strings or a callable.")
+
 
 @attr.s
 class Block:
-    title: Optional[str] = attr.ib()
-    contents: Sequence[str] = attr.ib()
+    title: DynamicTitle = attr.ib(converter=title)
+    contents: DynamicContents = attr.ib(converter=contents)
 
     def render(self,
                t: blessed.Terminal,
@@ -35,11 +67,13 @@ class Block:
             lines.append(rule)
 
         if self.title:
-            header = t.bold(self.title.ljust(iw))
+            title = self.title()
+            header = t.bold(title.ljust(iw))
             header = f"{left}{header}{right}"
             lines.append(header)
 
-        lines += [f'{left}{l: <{iw}}{right}' for l in self.contents]
+        contents = self.contents()
+        lines += [f'{left}{l: <{iw}}{right}' for l in contents]
         if border_bottom:
             lines.append(rule)
 
