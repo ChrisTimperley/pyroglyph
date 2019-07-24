@@ -41,8 +41,22 @@ def contents(c: Contents) -> DynamicContents:
         raise ValueError("expected sequence of strings or a callable.")
 
 
+class Block(abc.ABC):
+    @property
+    @abstractmethod
+    def title(self) -> str:
+        """The current title of the block."""
+        ...
+
+    @property
+    @abstractmethod
+    def contents(self) -> Sequence[str]:
+        """The current contents of the block as a sequence of lines."""
+        ...
+
+
 @attr.s
-class Block:
+class BasicBlock(Block):
     title: DynamicTitle = attr.ib(converter=title)
     contents: DynamicContents = attr.ib(converter=contents)
 
