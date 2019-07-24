@@ -2,6 +2,7 @@
 __all__ = ('__version__', 'Block', 'Window')
 
 from typing import Optional, Sequence, List
+from timeit import default_timer as timer
 import time
 
 import attr
@@ -52,6 +53,7 @@ class Window:
     blocks_left: Sequence[Block] = attr.ib()
     blocks_right: Sequence[Block] = attr.ib()
     terminal: blessed.Terminal = attr.ib(factory=blessed.Terminal)
+    refresh_rate: int = attr.ib(default=60)
     width: int = attr.ib(default=120)
 
     def _render_header(self) -> List[str]:
@@ -98,14 +100,18 @@ class Window:
 
         return lines
 
-    def _refresh(self) -> None:
-        print(self.terminal.clear(), end='')
-        print('\n'.join(self._render()), end='')
-
     def run(self) -> None:
-        # TODO implement refresh rate
+        refresh_interval: float = 1 / self.refresh_rate
         t = self.terminal
         with t.fullscreen(), t.hidden_cursor():
             while True:
-                self._refresh()
-                time.sleep(1)
+                frame_start: float = timer()
+
+                # fill and swap the buffers
+                updated = '\n'.join(self._render())
+                print(self.terminal.clear(), end='')
+                print(updated, end='')
+
+                frame_end: float = timer()
+                wait = max(0.0, refresh_interval - frame_end - frame_start)
+                time.sleep(wait)
