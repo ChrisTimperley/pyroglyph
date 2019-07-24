@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 __all__ = ('__version__', 'Block', 'Window')
 
-from typing import Optional, Sequence, List, Union, Callable
+from typing import Optional, Sequence, List, Union, Callable, Tuple
 from timeit import default_timer as timer
 import abc
 import time
@@ -22,20 +22,21 @@ Contents = Union[ConcreteContents, DynamicContents]
 
 def title(t: Title) -> DynamicTitle:
     """Ensures that a given title is implemented as a dynamic title."""
-    if isinstance(t, str):
-        return lambda: t
-    elif callable(t) and isinstance(t(), str):
+    if callable(t):
         return t
+    elif isinstance(t, str):
+        s: str = t
+        return lambda: s
     else:
         raise ValueError("expected str or callable.")
 
 
 def contents(c: Contents) -> DynamicContents:
-    if type(c) in (list, tuple):
-        c = tuple(c)
-        return lambda: c
-    elif callable(c) and type(c()) in (list, tuple):
+    if callable(c):
         return c
+    elif type(c) in (list, tuple):
+        k: Tuple[str, ...] = tuple(c)
+        return lambda: k
     else:
         raise ValueError("expected sequence of strings or a callable.")
 
