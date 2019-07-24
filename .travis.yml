@@ -7,7 +7,7 @@ install:
 - pip install --upgrade .
 script:
 - pycodestyle --show-source pyroglyph
-- mypy pyroglyph--ignore-missing-imports
+- mypy pyroglyph --ignore-missing-imports
 notifications:
   email: false
 deploy:
