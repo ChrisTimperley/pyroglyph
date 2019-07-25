@@ -5,6 +5,7 @@ from typing import Optional, Sequence, List, Union, Callable, Tuple
 from timeit import default_timer as timer
 import abc
 import time
+import threading
 
 import attr
 import blessed
@@ -88,6 +89,51 @@ class Window:
     refresh_rate: int = attr.ib(default=60)
     width: int = attr.ib(default=120)
 
+    def __attrs_post_init__(self) -> None:
+        self.__has_started = False
+        self.__terminated = threading.Event()
+        self.__thread_loop = threading.Thread(target=self._spin)
+
+    @property
+    def has_started(self) -> bool:
+        """Checks whether the render loop has been started."""
+        return self.__has_started
+
+    @property
+    def has_terminated(self) -> bool:
+        """Checks whether the render loop has been terminated."""
+        return self.__terminated.is_set()
+
+    @property
+    def is_running(self) -> bool:
+        """Checks whether the render loop is active."""
+        return self.has_started and not self.has_terminated
+
+    def __enter__(self) -> 'Window':
+        self.open()
+        return self
+
+    def __exit__(self, exc_type, exc, exc_tb) -> None:
+        self.close()
+
+    def open(self) -> None:
+        """Starts the render loop for this window.
+
+        Raises
+        ------
+        AlreadyStartedError
+            if the render loop for this window has already been started.
+        """
+        if self.__has_started:
+            raise exceptions.AlreadyStartedError
+
+        self.__has_started = True
+        self.__loop_thread.start()
+
+    def close(self) -> None:
+        """Terminates the render loop for this window."""
+        raise NotImplementedError
+
     def _render_header(self) -> List[str]:
         t = self.terminal
         header = t.bold(t.center(self.title, width=self.width, fillchar='='))
@@ -132,7 +178,8 @@ class Window:
 
         return lines
 
-    def run(self) -> None:
+    def _spin(self) -> None:
+        """Continually redraws the window and blocks until terminated."""
         refresh_interval: float = 1 / self.refresh_rate
         t = self.terminal
         with t.fullscreen(), t.hidden_cursor():
