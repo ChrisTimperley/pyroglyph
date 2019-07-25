@@ -1,3 +1,10 @@
+## 0.0.4 (2019-07-25)
+
+* use background render loop thread to draw UI without blocking main thread
+* added context manager to Window to ensure background render loop thread is
+  cleanly started and killed.
+
+
 ## 0.0.3 (2019-07-24)
 
 * added block interface, allowing users to provide custom blocks
