@@ -1,15 +1,19 @@
 # -*- coding: utf-8 -*-
-__all__ = ('__version__', 'PyroglyphException', 'AlreadyStarted',
-           'AlreadyTerminated')
+__all__ = ('__version__', 'PyroglyphError', 'AlreadyStartedError',
+           'AlreadyTerminatedError', 'NotStartedError')
 
 
-class PyroglyphException(Exception):
-    """Base class used by all Pyroglyph exceptions."""
+class PyroglyphError(Exception):
+    """Base class used by all Pyroglyph errors."""
 
 
-class AlreadyStarted(PyroglyphException):
+class NotStartedError(PyroglyphError):
+    """The render loop has not yet been started."""
+
+
+class AlreadyStartedError(PyroglyphError):
     """The render loop has already been started."""
 
 
-class AlreadyTerminated(PyroglyphException):
+class AlreadyTerminatedError(PyroglyphError):
     """The render loop has already been terminated."""
