@@ -92,7 +92,7 @@ class Window:
     def __attrs_post_init__(self) -> None:
         self.__has_started = False
         self.__terminated = threading.Event()
-        self.__thread_loop = threading.Thread(target=self._spin)
+        self.__thread_loop = threading.Thread(target=self._spin, daemon=True)
 
     @property
     def has_started(self) -> bool:
@@ -107,14 +107,7 @@ class Window:
     @property
     def is_running(self) -> bool:
         """Checks whether the render loop is active."""
-        return self.has_started and not self.has_terminated
-
-    def __enter__(self) -> 'Window':
-        self.open()
-        return self
-
-    def __exit__(self, exc_type, exc, exc_tb) -> None:
-        self.close()
+        return self.__thread_loop.is_alive()
 
     def open(self) -> None:
         """Starts the render loop for this window.
@@ -128,11 +121,32 @@ class Window:
             raise exceptions.AlreadyStartedError
 
         self.__has_started = True
-        self.__loop_thread.start()
+        self.__thread_loop.start()
 
     def close(self) -> None:
-        """Terminates the render loop for this window."""
-        raise NotImplementedError
+        """Terminates the render loop for this window.
+
+        Raises
+        ------
+        NotStartedError
+            if the render loop for this window has not been started.
+        AlreadyTerminatedError
+            if the render loop for this window has already been terminated.
+        """
+        if not self.has_started:
+            raise exceptions.NotStartedError
+        if self.__terminated.is_set():
+            raise exceptions.AlreadyTerminatedError
+
+        self.__terminated.set()
+        self.__thread_loop.join()
+
+    def __enter__(self) -> 'Window':
+        self.open()
+        return self
+
+    def __exit__(self, exc_type, exc, exc_tb) -> None:
+        self.close()
 
     def _render_header(self) -> List[str]:
         t = self.terminal
@@ -183,7 +197,7 @@ class Window:
         refresh_interval: float = 1 / self.refresh_rate
         t = self.terminal
         with t.fullscreen(), t.hidden_cursor():
-            while True:
+            while not self.__terminated.is_set():
                 frame_start: float = timer()
 
                 # fill and swap the buffers
@@ -192,5 +206,6 @@ class Window:
                 print(updated, end='')
 
                 frame_end: float = timer()
-                wait = max(0.0, refresh_interval - frame_end - frame_start)
+                frame_duration: float = frame_end - frame_start
+                wait = max(0.0, refresh_interval - frame_duration)
                 time.sleep(wait)

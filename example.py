@@ -2,6 +2,7 @@
 from typing import List, Union, Tuple
 from timeit import default_timer as timer
 import datetime
+import time
 
 import pyroglyph
 
@@ -33,5 +34,5 @@ def contents() -> List[str]:
 title = lambda: f'Cool [{datetime.datetime.now()}]'
 block_resources = pyroglyph.BasicBlock(title, contents)
 
-window = pyroglyph.Window('Darjeeling', [block_resources], [])
-window.run()
+with pyroglyph.Window('Darjeeling', [block_resources], []):
+    time.sleep(10)
