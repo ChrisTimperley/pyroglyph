@@ -1,3 +1,8 @@
+## 0.0.5 (2019-10-11)
+
+* updated attrs to 19.2.0.
+
+
 ## 0.0.4 (2019-07-25)
 
 * use background render loop thread to draw UI without blocking main thread

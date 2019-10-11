@@ -4,7 +4,7 @@ import os
 from setuptools import setup
 
 PACKAGE_NAME = 'pyroglyph'
-VERSION = '0.0.4'
+VERSION = '0.0.5'
 
 setup(
     name=PACKAGE_NAME,
@@ -18,7 +18,7 @@ setup(
     license='Apache License 2.0',
     install_requires=[
         'typing-extensions>=3.7.2',
-        'attrs~=19.1.0',
+        'attrs~=19.2.0',
         'blessed~=1.15.0'
     ],
     packages=['pyroglyph'],
