@@ -16,11 +16,6 @@ setup(
     author_email='ctimperley@cmu.edu',
     url='https://github.com/ChrisTimperley/pyroglyph',
     license='Apache License 2.0',
-    install_requires=[
-        'typing-extensions>=3.7.2',
-        'attrs~=19.2.0',
-        'blessed~=1.15.0'
-    ],
     packages=['pyroglyph'],
     keywords=['cli', 'blessed', 'ui', 'simple'],
     classifiers=[
