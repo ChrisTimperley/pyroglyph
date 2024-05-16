@@ -7,10 +7,10 @@ import threading
 import time
 import typing
 from collections.abc import Sequence
+from dataclasses import dataclass, field
 from timeit import default_timer as timer
 from typing import Callable, Self
 
-import attr
 import blessed
 
 from . import exceptions
@@ -86,17 +86,17 @@ class BasicBlock(Block):
             return self.__contents()
         return self.__contents
 
-@attr.s
+@dataclass
 class Window:
     """Provides an interactive terminal-based user interface."""
-    title: str = attr.ib()
-    blocks_left: Sequence[Block] = attr.ib()
-    blocks_right: Sequence[Block] = attr.ib()
-    terminal: blessed.Terminal = attr.ib(factory=blessed.Terminal)
-    refresh_rate: int = attr.ib(default=60)
-    width: int = attr.ib(default=120)
+    title: str
+    blocks_left: Sequence[Block]
+    blocks_right: Sequence[Block]
+    terminal: blessed.Terminal = field(default_factory=blessed.Terminal)
+    refresh_rate: int = field(default=60)
+    width: int = field(default=120)
 
-    def __attrs_post_init__(self) -> None:
+    def __post_init__(self) -> None:
         self.__has_started = False
         self.__terminated = threading.Event()
         self.__thread_loop = threading.Thread(target=self._spin, daemon=True)
