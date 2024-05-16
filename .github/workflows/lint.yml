@@ -1,0 +1,35 @@
+name: Lint
+on: [push, pull_request, workflow_call]
+jobs:
+  lint:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v5
+    - uses: actions/setup-python@v5
+      with:
+        python-version: 3.11
+
+    - name: Run image
+      uses: abatilo/actions-poetry@v3
+      with:
+        poetry-version: 1.7.1
+
+    - name: Setup a local virtual environment (if no poetry.toml file)
+      run: |
+        poetry config virtualenvs.create true --local
+        poetry config virtualenvs.in-project true --local
+
+    - uses: actions/cache@v3
+      name: Define a cache for the virtual environment based on the dependencies lock file
+      with:
+        path: ./.venv
+        key: venv-${{ hashFiles('poetry.lock') }}
+
+    - name: Install package
+      run: poetry install --with dev
+
+    - name: Lint via Ruff
+      run: poetry run ruff check src
+
+    - name: Type check via MyPy
+      run: poetry run mypy src
