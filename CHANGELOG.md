@@ -1,3 +1,11 @@
+## 0.1.0 (2024-05-15)
+
+* removed dependency on attrs
+* switched from pipenv to poetry
+* switched from Travis to GitHub Actions
+* updated code to use Python 3.9 features
+
+
 ## 0.0.6 (2019-12-09)
 
 * updated attrs to 19.3.0.
