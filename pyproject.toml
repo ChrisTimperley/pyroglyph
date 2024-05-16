@@ -36,6 +36,8 @@ strict = true
 line-length = 120
 target-version = "py39"
 src = ["src"]
+
+[tool.ruff.lint]
 select = [
     "ALL",  # includes all rules (including new ones)
 ]

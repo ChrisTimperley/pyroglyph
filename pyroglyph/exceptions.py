@@ -1,8 +1,3 @@
-# -*- coding: utf-8 -*-
-__all__ = ('__version__', 'PyroglyphError', 'AlreadyStartedError',
-           'AlreadyTerminatedError', 'NotStartedError')
-
-
 class PyroglyphError(Exception):
     """Base class used by all Pyroglyph errors."""
 

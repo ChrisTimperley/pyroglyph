@@ -1,19 +1,25 @@
-# -*- coding: utf-8 -*-
-__all__ = ('__version__', 'Block', 'Window')
+from __future__ import annotations
 
-from typing import Optional, Sequence, List, Union, Callable, Tuple
-from timeit import default_timer as timer
+__all__ = ("Block", "Window")
+
 import abc
-import time
 import threading
+import time
+import typing
+from collections.abc import Sequence
+from timeit import default_timer as timer
+from typing import Callable, Self
 
 import attr
 import blessed
 
 from . import exceptions
 
-Title = Union[str, Callable[[], str]]
-Contents = Union[Sequence[str], Callable[[], Sequence[str]]]
+if typing.TYPE_CHECKING:
+    from types import TracebackType
+
+Title = str | Callable[[], str]
+Contents = Sequence[str] | Callable[[], Sequence[str]]
 
 
 class Block(abc.ABC):
@@ -29,21 +35,22 @@ class Block(abc.ABC):
         """The current contents of the block as a sequence of lines."""
         ...
 
-    def render(self,
-               t: blessed.Terminal,
-               *,
-               width: int = 80,
-               border_top: bool = True,
-               border_bottom: bool = True,
-               border_left: bool = True,
-               border_right: bool = True
-               ) -> List[str]:
+    def render(
+        self,
+        t: blessed.Terminal,
+        *,
+        width: int = 80,
+        border_top: bool = True,
+        border_bottom: bool = True,
+        border_left: bool = True,
+        border_right: bool = True,
+    ) -> list[str]:
         """Renders the contents of the block to a list of lines."""
-        lines: List[str] = []
+        lines: list[str] = []
 
-        rule = width * '.'
-        left = ': ' if border_left else ' '
-        right = ' :' if border_right else ' '
+        rule = width * "."
+        left = ": " if border_left else " "
+        right = " :" if border_right else " "
         iw = width - len(left) - len(right)
 
         if border_top:
@@ -54,7 +61,7 @@ class Block(abc.ABC):
             header = f"{left}{header}{right}"
             lines.append(header)
 
-        lines += [f'{left}{l: <{iw}}{right}' for l in self.contents]
+        lines += [f"{left}{line: <{iw}}{right}" for line in self.contents]
         if border_bottom:
             lines.append(rule)
 
@@ -141,19 +148,24 @@ class Window:
         self.__terminated.set()
         self.__thread_loop.join()
 
-    def __enter__(self) -> 'Window':
+    def __enter__(self) -> Self:
         self.open()
         return self
 
-    def __exit__(self, exc_type, exc, exc_tb) -> None:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
         self.close()
 
-    def _render_header(self) -> List[str]:
+    def _render_header(self) -> list[str]:
         t = self.terminal
-        header = t.bold(t.center(self.title, width=self.width, fillchar='='))
+        header = t.bold(t.center(self.title, width=self.width, fillchar="="))
         return [header]
 
-    def _render(self) -> List[str]:
+    def _render(self) -> list[str]:
         t = self.terminal
         lines = self._render_header()
 
@@ -162,18 +174,18 @@ class Window:
         width_right = width_left
 
         # draw left blocks
-        lines_left: List[str] = []
+        lines_left: list[str] = []
         for b in self.blocks_left[:1]:
             lines_left += b.render(t, width=width_left)
         for b in self.blocks_left[1:]:
             lines_left += b.render(t, width=width_left, border_top=False)
 
         # draw right blocks
-        lines_right: List[str] = []
+        lines_right: list[str] = []
         for b in self.blocks_right[:1]:
             lines_right += b.render(t, width=width_right, border_left=False)
         for b in self.blocks_right[1:]:
-            lines_right += b.render(t, width=width_right, border_top=False, border_left=False)  # noqa
+            lines_right += b.render(t, width=width_right, border_top=False, border_left=False)
 
         # ensure each column has the same number of lines by padding
         height_left = len(lines_left)
@@ -181,10 +193,10 @@ class Window:
         height = max(height_left, height_right)
         height_diff = abs(height_left - height_right)
         if height_left > height_right:
-            padding = ' ' * width_right
+            padding = " " * width_right
             lines_right += [padding for i in range(height_diff)]
         elif height_right > height_left:
-            padding = ' ' * (width_left - 1) + ':'
+            padding = " " * (width_left - 1) + ":"
             lines_left += [padding for i in range(height_diff)]
 
         # compose the two columns into a single list of lines
@@ -201,9 +213,9 @@ class Window:
                 frame_start: float = timer()
 
                 # fill and swap the buffers
-                updated = '\n'.join(self._render())
-                print(self.terminal.clear(), end='')
-                print(updated, end='')
+                updated = "\n".join(self._render())
+                print(self.terminal.clear(), end="")
+                print(updated, end="")
 
                 frame_end: float = timer()
                 frame_duration: float = frame_end - frame_start
